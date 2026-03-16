@@ -18,8 +18,8 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-TELEGRAM_BOT_TOKEN = os.getenv("5138642621:AAHfyzvS7tqX0xF8X3FVSR7bs9pgjxjSyYk")
-ADMIN_CHAT_ID = os.getenv("1148972895")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 PORT = int(os.getenv("PORT", "10000"))
 
