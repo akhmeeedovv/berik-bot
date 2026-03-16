@@ -20,17 +20,12 @@ logging.basicConfig(
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-PORT = int(os.getenv("PORT", "10000"))
 
 if not TELEGRAM_BOT_TOKEN:
     raise RuntimeError("TELEGRAM_BOT_TOKEN is not set")
 
 if not ADMIN_CHAT_ID:
     raise RuntimeError("ADMIN_CHAT_ID is not set")
-
-if not WEBHOOK_URL:
-    raise RuntimeError("WEBHOOK_URL is not set")
 
 ADMIN_CHAT_ID = int(ADMIN_CHAT_ID)
 DB_PATH = "berik_requests.db"
@@ -221,7 +216,10 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message:
-        await update.message.reply_text("❓ Выбери вопрос или вернись в меню.", reply_markup=FAQ_MENU)
+        await update.message.reply_text(
+            "❓ Выбери вопрос или вернись в меню.",
+            reply_markup=FAQ_MENU,
+        )
 
 
 async def manager(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -253,6 +251,7 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = (update.message.text or "").strip()
     if text == "⬅️ Отмена":
         return await cancel(update, context)
+
     context.user_data["request_form"]["name"] = text
     await update.message.reply_text(
         "Теперь отправьте номер телефона текстом или кнопкой ниже.",
@@ -282,6 +281,7 @@ async def get_city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = (update.message.text or "").strip()
     if text == "⬅️ Отмена":
         return await cancel(update, context)
+
     context.user_data["request_form"]["city"] = text
     await update.message.reply_text(
         "Выберите интересующую услугу:",
@@ -301,6 +301,7 @@ async def get_service(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     text = (update.message.text or "").strip()
     if text == "⬅️ Отмена":
         return await cancel(update, context)
+
     context.user_data["request_form"]["service"] = text
     await update.message.reply_text(
         "Кратко опишите ваш запрос:",
@@ -313,6 +314,7 @@ async def get_description(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     text = (update.message.text or "").strip()
     if text == "⬅️ Отмена":
         return await cancel(update, context)
+
     context.user_data["request_form"]["description"] = text
     await update.message.reply_text(
         "Если хотите, отправьте фото.\nИли нажмите «Пропустить».",
@@ -384,7 +386,10 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             caption=admin_text,
         )
     else:
-        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=admin_text)
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID,
+            text=admin_text,
+        )
 
     await update.message.reply_text(
         "✅ Заявка отправлена.\nСпасибо! Менеджер свяжется с вами.",
@@ -423,7 +428,10 @@ async def fallback_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     elif text in FAQ_ANSWERS:
         await answer_faq(update, context)
     else:
-        await update.message.reply_text("Выберите действие из меню.", reply_markup=MAIN_MENU)
+        await update.message.reply_text(
+            "Выберите действие из меню.",
+            reply_markup=MAIN_MENU,
+        )
 
 
 def main() -> None:
@@ -464,16 +472,12 @@ def main() -> None:
     app.add_handler(CommandHandler("price", price))
     app.add_handler(CommandHandler("faq", faq))
     app.add_handler(CommandHandler("manager", manager))
+
     app.add_handler(conv_handler)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback_text))
 
-    print("Berik bot started with webhook...")
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=PORT,
-        url_path=TELEGRAM_BOT_TOKEN,
-        webhook_url=f"{WEBHOOK_URL}/{TELEGRAM_BOT_TOKEN}",
-    )
+    print("Berik bot started with polling...")
+    app.run_polling()
 
 
 if __name__ == "__main__":
